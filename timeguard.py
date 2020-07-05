@@ -53,25 +53,26 @@ class TimeGuard:
     if 'use_cache' not in self.config:
       self.config['use_cache'] = False
 
-  def api_login(self): 
+  def api_put_request(self, uri, data):
+    cache_file = f'{uri.replace("/","_")}.json'
     if self.config['use_cache']:
-      with open(f'{self.cache_folder}/login.json') as data_file:    
+      with open(f'{self.cache_folder}/{cache_file}') as data_file:    
         return json.load(data_file)
-    data = f'username={self.config["username"]}&password={self.config["password"]}'
     headers = {'User-Agent': 'okhttp/3.3.1'}
     timeout = (self.connect_timeout, self.read_timeout)
-    response = requests.put(f'{self.base_url}/users/login', headers=headers, data=data, timeout=timeout)
+    response = requests.put(f'{self.base_url}/{uri}', headers=headers, data=data, timeout=timeout)
     if response.status_code == 200:
       response_json = response.json()
-      status_file = open(f'{self.cache_folder}/login.json', 'w')
+      status_file = open(f'{self.cache_folder}/{cache_file}', 'w')
       status_file.write(json.dumps(response_json))
       status_file.close()
       return response_json
     else:
       raise Exception(f'Login request failed: {response.status_code}')
-  
+
   def populate_devices(self):
-    response_json = self.api_login() 
+    data = f'username={self.config["username"]}&password={self.config["password"]}'
+    response_json = self.api_put_request('users/login', data)
     self.token = response_json['message']['user']['token']
     for device in response_json['message']['wifi_box']:
       self.devices.append(Device(self, device))
