@@ -8,21 +8,66 @@ import yaml
 import json
 from pathlib import Path
 
+
+class Program:
+  id = None
+  start_time = ''
+  start_enabled = False
+  end_time = ''
+  end_enabled = False
+  days = ''
+
+  def __init__(self, id, attributes):
+    self.id = id
+    self.start_time = attributes['start']['time']
+    self.start_enabled = bool(int(attributes['start']['enable']))
+    self.end_time = attributes['end']['time']
+    self.end_enabled = bool(int(attributes['end']['enable']))
+    self.days = self.translate_days_value(attributes['map'])
+
+  def translate_days_value(self, days):
+    weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    translated_days = []
+    for dow in days:
+      if days[dow] == '1': 
+        translated_days.append(weekdays[int(dow)])
+    if (len(translated_days) == 0):
+      return 'None'
+    return ','.join(translated_days)
+
+  def __repr__(self):
+    return f'{self.id} {self.start_time}({self.start_enabled}) to {self.end_time}({self.end_enabled}) on {self.days})'
+
 class Device:
   name = ''
   id = ''
   attributes = {}
   timeguard = None
+  programs = []
+  holiday = False
+  holiday_start = ''
+  holiday_end = ''
+  boost_start_time = '0'
+  boost_hour = '0'
+  advance = '0'
 
   def __init__(self, timeguard, attributes):
-    self.timeguard = timeguard
     self.attributes = attributes
     self.name = attributes['name']
     self.id = attributes['device_id']
+    self.online = bool(int(attributes['online']))
+    self.timeguard = timeguard
     self.refresh_device_info()
 
   def refresh_device_info(self):
-    self.timeguard.api_request('GET',f'wifi_boxes/data/user_id/{self.timeguard.user_id}/wifi_box_id/{self.id}/token/{self.timeguard.token}')
+    response_json = self.timeguard.api_request('GET',f'wifi_boxes/data/user_id/{self.timeguard.user_id}/wifi_box_id/{self.id}/token/{self.timeguard.token}')
+    message = response_json['message']
+    self.holiday = bool(int(message['holiday']['enable']))
+    self.holiday_start  = message['holiday']['start']
+    self.holiday_end  = message['holiday']['end']
+    self.advance = bool(int(message['advance']))
+    for program in message['program']:
+      self.programs.append(Program(message['program'].index(program),program))
 
   def __repr__(self):
     return f'{self.name}'
@@ -90,7 +135,11 @@ class TimeGuard:
 
 def main(): 
   tg = TimeGuard()
-  pprint(tg.refresh_devices())
+  tg.refresh_devices()
+  for device in tg.devices:
+    pprint(device.name)
+    for program in device.programs:
+      pprint(program)
 
 if __name__ == "__main__":
   main()
