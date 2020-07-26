@@ -8,14 +8,15 @@ import yaml
 import json
 from pathlib import Path
 
-
 class Program:
   id = None
+  name = None
   attributes = {}
   DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
-  def __init__(self, id, attributes):
+  def __init__(self, id, name, attributes):
     self.id = id
+    self.name = name
     self.attributes = attributes
 
   def translate_days_value(self, days):
@@ -52,7 +53,7 @@ class Program:
     start_enabled = bool(int(self.attributes['start']['enable']))
     end_time = self.attributes['end']['time']
     end_enabled = bool(int(self.attributes['end']['enable']))
-    return "%d %s(%s) to %s(%s) on %s" % (self.id, start_time, start_enabled, end_time, end_enabled, days)
+    return "Program %s (%s): %s(%s) to %s(%s) on %s" % (self.id, self.name, start_time, start_enabled, end_time, end_enabled, days)
 
 class Device:
   name = ''
@@ -76,14 +77,20 @@ class Device:
     self.refresh_device_info()
 
   def refresh_device_info(self):
-    response_json = self.timeguard.api_request('GET',f'wifi_boxes/data/user_id/{self.timeguard.user_id}/wifi_box_id/{self.id}/token/{self.timeguard.token}')
-    message = response_json['message']
+    device_json = self.timeguard.api_request('GET',f'wifi_boxes/data/user_id/{self.timeguard.user_id}/wifi_box_id/{self.id}/token/{self.timeguard.token}')
+    message = device_json['message']
+    program_list_json = self.timeguard.api_request('GET',f'wifi_boxes/program_list/user_id/{self.timeguard.user_id}/wifi_box_id/{self.id}/token/{self.timeguard.token}')
+    program_list = {}
+    for program_name in program_list_json['message']['namelist']:
+      program_list[program_name['id']] = program_name['name']
     self.holiday = bool(int(message['holiday']['enable']))
     self.holiday_start  = message['holiday']['start']
     self.holiday_end  = message['holiday']['end']
     self.advance = bool(int(message['advance']))
     for program in message['program']:
-      self.programs.append(Program(message['program'].index(program),program))
+      id = str(message['program'].index(program))
+      program_name = program_list[id]
+      self.programs.append(Program(id, program_name, program))
 
   def __repr__(self):
     return f'{self.name}'
@@ -121,7 +128,7 @@ class TimeGuard:
 
   def api_request(self, type, uri, data=None):
     response = None
-    cache_file = f'{uri.replace("/","_")}.json'
+    cache_file = f'{uri.replace(self.token,"").replace("/","_")}.json'
     if self.config['use_cache']:
       with open(f'{self.cache_folder}/{cache_file}') as data_file:    
         return json.load(data_file)
@@ -155,18 +162,14 @@ def main():
   for device in tg.devices:
     pprint(device.name)
     for program in device.programs:
-
-      everyday = { 'Mon': True, 'Tue': True, 'Wed': True, 'Thu': True, 'Fri': True, 'Sat': True, 'Sun': True}
-
-      print('Before')
-      pprint(program.attributes)
-      if program.id == 0:
-        program.set_schedule(everyday, '05:00', '06:00')
-      else:
-         program.reset_schedule()
-      print('After')
-      pprint(program.attributes)
-
+     everyday = { 'Mon': True, 'Tue': True, 'Wed': True, 'Thu': True, 'Fri': True, 'Sat': True, 'Sun': True}
+     pprint(program)
+      #if program.id == 0:
+      #  program.set_schedule(everyday, '05:00', '06:00')
+      #else:
+      #   program.reset_schedule()
+      #print('After')
+      #pprint(program.attributes)
 
 if __name__ == "__main__":
   main()
