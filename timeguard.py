@@ -11,32 +11,48 @@ from pathlib import Path
 
 class Program:
   id = None
-  start_time = ''
-  start_enabled = False
-  end_time = ''
-  end_enabled = False
-  days = ''
+  attributes = {}
+  DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
   def __init__(self, id, attributes):
     self.id = id
-    self.start_time = attributes['start']['time']
-    self.start_enabled = bool(int(attributes['start']['enable']))
-    self.end_time = attributes['end']['time']
-    self.end_enabled = bool(int(attributes['end']['enable']))
-    self.days = self.translate_days_value(attributes['map'])
+    self.attributes = attributes
 
   def translate_days_value(self, days):
-    weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
     translated_days = []
     for dow in days:
       if days[dow] == '1': 
-        translated_days.append(weekdays[int(dow)])
+        translated_days.append(self.DAYS[int(dow)])
     if (len(translated_days) == 0):
       return 'None'
     return ','.join(translated_days)
 
+  def set_schedule(self, days, start_time, end_time, start_enabled=True, end_enabled = True):
+    for day in days:
+      if day in self.DAYS:
+        self.attributes['map'][str(int(self.DAYS.index(day)))] = str(int(days[day]))
+        self.attributes['end']['enable'] = str(int(end_enabled))
+        self.attributes['end']['time'] = end_time
+        self.attributes['start']['enable'] = str(int(start_enabled))
+        self.attributes['start']['time'] = start_time
+      else:
+        print(f'Unknown day {day}')
+
+  def reset_schedule(self):
+    for day in self.DAYS:
+      self.attributes['map'][str(self.DAYS.index(day))] = '0'
+      self.attributes['end']['enable'] = '0'
+      self.attributes['end']['time'] = '00:00'
+      self.attributes['start']['enable'] = '0'
+      self.attributes['start']['time'] = '00:00'
+
   def __repr__(self):
-    return f'{self.id} {self.start_time}({self.start_enabled}) to {self.end_time}({self.end_enabled}) on {self.days})'
+    days = self.translate_days_value(self.attributes['map'])
+    start_time = self.attributes['start']['time']
+    start_enabled = bool(int(self.attributes['start']['enable']))
+    end_time = self.attributes['end']['time']
+    end_enabled = bool(int(self.attributes['end']['enable']))
+    return "%d %s(%s) to %s(%s) on %s" % (self.id, start_time, start_enabled, end_time, end_enabled, days)
 
 class Device:
   name = ''
@@ -139,7 +155,18 @@ def main():
   for device in tg.devices:
     pprint(device.name)
     for program in device.programs:
-      pprint(program)
+
+      everyday = { 'Mon': True, 'Tue': True, 'Wed': True, 'Thu': True, 'Fri': True, 'Sat': True, 'Sun': True}
+
+      print('Before')
+      pprint(program.attributes)
+      if program.id == 0:
+        program.set_schedule(everyday, '05:00', '06:00')
+      else:
+         program.reset_schedule()
+      print('After')
+      pprint(program.attributes)
+
 
 if __name__ == "__main__":
   main()
