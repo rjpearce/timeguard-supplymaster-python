@@ -72,25 +72,22 @@ class Program:
     for time_slot in attributes:
       self.time_slots.append(TimeSlot(time_slot))
 
-  def to_json(self):
+  def save(self):
     slots = []
     for time_slot in self.time_slots:
-      slots.append(time_slot.to_json)
-    return {
-      "id": self.id,
-      "name": self.name,
-      "program": slots
-    }
-
-  def save(self):
+      slots.append(time_slot.to_json())
     data = { 
+      "program": json.dumps({
+        "id": self.id,
+        "name": self.name,
+        "program": slots
+      }),
       "token": self.device.timeguard.token,
-      "program": self.to_json,
       "user_id": self.device.timeguard.user_id,
-      "wifi_box_id": self.id,
+      "wifi_box_id": self.device.id
     }
     pprint(data)
-    #response_json = self.device.timeguard.api_request('PUT','wifi_boxes/program', data)
+    response_json = self.device.timeguard.api_request('PUT','wifi_boxes/program', data)
 
   def __repr__(self):
     return "Program %s (%s):\n  %s" % (self.id, self.name, self.time_slots)
@@ -171,11 +168,15 @@ class TimeGuard:
         return json.load(data_file)
     timeout = (self.connect_timeout, self.read_timeout)
     if type == 'PUT':
+      print('PUT', f'{self.BASE_URL}/{uri}', data, self.HEADERS, timeout)
       response = requests.put(f'{self.BASE_URL}/{uri}', data=data, headers=self.HEADERS, timeout=timeout)
     elif type == 'GET':
+      print('GET', f'{self.BASE_URL}/{uri}', self.HEADERS, timeout)
       response = requests.get(f'{self.BASE_URL}/{uri}', headers=self.HEADERS, timeout=timeout)
     if response.status_code == 200:
+      print(response.status_code)
       response_json = response.json()
+      pprint(response_json)
       status_file = open(f'{self.cache_folder}/{cache_file}', 'w')
       status_file.write(json.dumps(response_json))
       status_file.close()
@@ -200,12 +201,19 @@ def main():
     for program in device.programs:
       everyday = { 'Mon': True, 'Tue': True, 'Wed': True, 'Thu': True, 'Fri': True, 'Sat': True, 'Sun': True}
       if program.id == '0':
-        program.time_slots[0].set_time(everyday, '05:00', '06:00')
+        program.time_slots[0].set_time(everyday, '00:30', '01:00')
+        program.time_slots[1].set_time(everyday, '02:30', '03:00')
+        program.time_slots[2].set_time(everyday, '03:30', '04:00')
+        program.time_slots[3].set_time(everyday, '15:00', '15:30')
+        program.time_slots[4].reset()
+        program.time_slots[5].reset()
+        program.save()
       else:
         program.name = f'Program {program.id}'
         program.time_slots[0].reset()
       print(program.id, program.name)
       print(program.time_slots)
+      
 
 if __name__ == "__main__":
   main()
