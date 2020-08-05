@@ -145,6 +145,7 @@ class TimeGuard:
     self.config = self.read_config(config_path)
     self.validate_config()
     self.cache_folder = cache_folder
+    os.makedirs(cache_folder, exist_ok=True)
 
   def read_config(self, config_path):
     """ Read the configuration file """
@@ -192,28 +193,3 @@ class TimeGuard:
     for device in response_json['message']['wifi_box']:
       self.devices.append(Device(self, device))
     return self.devices
-
-def main(): 
-  tg = TimeGuard()
-  tg.refresh_devices()
-  for device in tg.devices:
-    print(device.name, device.id)
-    for program in device.programs:
-      everyday = { 'Mon': True, 'Tue': True, 'Wed': True, 'Thu': True, 'Fri': True, 'Sat': True, 'Sun': True}
-      if program.id == '0':
-        program.time_slots[0].set_time(everyday, '00:30', '01:00')
-        program.time_slots[1].set_time(everyday, '02:30', '03:00')
-        program.time_slots[2].set_time(everyday, '03:30', '04:00')
-        program.time_slots[3].set_time(everyday, '15:00', '15:30')
-        program.time_slots[4].reset()
-        program.time_slots[5].reset()
-        program.save()
-      else:
-        program.name = f'Program {program.id}'
-        program.time_slots[0].reset()
-      print(program.id, program.name)
-      print(program.time_slots)
-      
-
-if __name__ == "__main__":
-  main()
