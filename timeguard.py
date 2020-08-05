@@ -88,6 +88,10 @@ class Program:
     }
     pprint(data)
     response_json = self.device.timeguard.api_request('PUT','wifi_boxes/program', data)
+  
+  def reset_all_time_slots(self):
+    for time_slot in self.time_slots:
+      time_slot.reset()
 
   def __repr__(self):
     return "Program %s (%s):\n  %s" % (self.id, self.name, self.time_slots)
@@ -140,6 +144,7 @@ class TimeGuard:
   user_id = ''
   HEADERS = {'User-Agent': 'okhttp/3.3.1'}
   BASE_URL = 'https://www.cloudwarm.net/TimeGuard/api/Android/v_1'
+  EVERYDAY = { 'Mon': True, 'Tue': True, 'Wed': True, 'Thu': True, 'Fri': True, 'Sat': True, 'Sun': True}
 
   def __init__(self, config_path=f'{str(Path.home())}/.timeguard.yaml', cache_folder=f'{os.getcwd()}/cache'):
     self.config = self.read_config(config_path)
