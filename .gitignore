@@ -1,2 +1,8 @@
-cache/
 examples/cache
+timeguard-supportmaster/cache
+cache
+build
+dist
+tg
+__pycache__
+timeguard_supplymaster.egg-info/

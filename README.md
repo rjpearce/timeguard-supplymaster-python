@@ -21,25 +21,28 @@ The software is provided “as is”, without warranty of any kind, express or i
 1. Clone the repo
 
   ```bash
-  git clone git@github.com:rjpearce/timeguard-supplymaster-python.git timeguard
+  pip install timeguard-supplymaster
   ```
 
-1. Create ~/.timeguard.yaml
+2. Create ~/.timeguard.yaml
 
   ```bash
   ---
-  username: tg-username
-  password: tg-password
+  username: your-username
+  password: your-password
   use_cache: False
   ...
   ```
+
 ## Usage
 
 List all devices, programs and time slots.
 
 ```python
-tg = TimeGuard()
-tg.refresh_devices()
+from timeguard_supplymaster import Client
+
+client = Client()
+client.refresh_devices()
 for device in tg.devices:
   print(device.name, device.id)
   for program in device.programs:
