@@ -21,6 +21,7 @@ class Client:
   HEADERS = {'User-Agent': 'okhttp/3.3.1'}
   BASE_URL = 'https://www.cloudwarm.net/TimeGuard/api/Android/v_1'
   EVERYDAY = { 'Mon': True, 'Tue': True, 'Wed': True, 'Thu': True, 'Fri': True, 'Sat': True, 'Sun': True}
+  NEVER = { 'Mon': False, 'Tue': False, 'Wed': False, 'Thu': False, 'Fri': False, 'Sat': False, 'Sun': False}
 
   def __init__(self, config_path=f'{str(Path.home())}/.timeguard.yaml', cache_folder=f'{os.getcwd()}/cache'):
     self.config = self.read_config(config_path)
