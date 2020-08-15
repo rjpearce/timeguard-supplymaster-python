@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="timeguard-supplymaster",
-    version="0.0.15",
+    version="0.0.16",
     author="Richard Pearce",
     author_email="rjpearce23@gmail.com",
     description="Implementation of the API used by the Timeguard's Supplymaster application",
