@@ -88,7 +88,7 @@ time_slots = agile.get_min_times(TOTAL_SLOTS, rates, requirements)
 localised_time_slots = localise_rates(time_slots, LDN)
 
 # Connect to the timeguard API
-timeguard = timeguard_supplymaster()
+timeguard = timeguard_supplymaster.Client()
 timeguard.refresh_devices()
 for device in timeguard.devices:
   for program in device.programs:
