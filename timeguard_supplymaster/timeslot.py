@@ -3,7 +3,7 @@ from pprint import pprint
 """ A single time entry when the device should be on or off """
 class TimeSlot:
   attributes = {}
-  DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+  DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
   def __init__(self, attributes):
     self.attributes = attributes
