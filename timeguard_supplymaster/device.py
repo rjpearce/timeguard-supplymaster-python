@@ -1,5 +1,6 @@
 
 from .program import Program
+from .mode import Mode
 
 class Device:
   name = ''
@@ -13,6 +14,7 @@ class Device:
   boost_start_time = '0'
   boost_hour = '0'
   advance = '0'
+  mode = None
 
   def __init__(self, timeguard, attributes):
     self.attributes = attributes
@@ -33,6 +35,17 @@ class Device:
     self.holiday_start  = message['holiday']['start']
     self.holiday_end  = message['holiday']['end']
     self.advance = bool(int(message['advance']))
+    self.mode = Mode(int(message['work_mode']))
+
+  def set_mode(self, mode):
+    data = {
+      "work_mode": mode.value,
+      "token": self.timeguard.token,
+      "user_id": self.timeguard.user_id,
+      "wifi_box_id": self.id,
+    }
+    self.mode = mode
+    return self.timeguard.api_request("PUT", 'wifi_boxes/work_mode', data)
 
   def __repr__(self):
     return f'{self.name}'
