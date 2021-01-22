@@ -23,11 +23,19 @@ class Client:
   EVERYDAY = { 'Mon': True, 'Tue': True, 'Wed': True, 'Thu': True, 'Fri': True, 'Sat': True, 'Sun': True}
   NEVER = { 'Mon': False, 'Tue': False, 'Wed': False, 'Thu': False, 'Fri': False, 'Sat': False, 'Sun': False}
 
-  def __init__(self, config_path=f'{str(Path.home())}/.timeguard.yaml', cache_folder=f'{os.getcwd()}/cache'):
+  def __init__(self, config_path=f'{str(Path.home())}/.timeguard.yaml', cache_folder=f'{os.getcwd()}/cache', quiet=False):
     self.config = self.read_config(config_path)
     self.validate_config()
     self.cache_folder = cache_folder
     os.makedirs(cache_folder, exist_ok=True)
+    self.quiet = quiet
+
+  def _log(self, *msg, usePP = False):
+    if not self.quiet:
+      if usePP:
+        pprint(*msg)
+      else:
+        print(*msg)
 
   def read_config(self, config_path):
     """ Read the configuration file """
@@ -47,19 +55,19 @@ class Client:
     response = None
     cache_file = f'{uri.replace(self.token,"").replace("/","_")}.json'
     if self.config['use_cache']:
-      with open(f'{self.cache_folder}/{cache_file}') as data_file:    
+      with open(f'{self.cache_folder}/{cache_file}') as data_file:
         return json.load(data_file)
     timeout = (self.connect_timeout, self.read_timeout)
     if type == 'PUT':
-      print('PUT', f'{self.BASE_URL}/{uri}', data, self.HEADERS, timeout)
+      self._log('PUT', f'{self.BASE_URL}/{uri}', data, self.HEADERS, timeout)
       response = requests.put(f'{self.BASE_URL}/{uri}', data=data, headers=self.HEADERS, timeout=timeout)
     elif type == 'GET':
-      print('GET', f'{self.BASE_URL}/{uri}', self.HEADERS, timeout)
+      self._log('GET', f'{self.BASE_URL}/{uri}', self.HEADERS, timeout)
       response = requests.get(f'{self.BASE_URL}/{uri}', headers=self.HEADERS, timeout=timeout)
     if response.status_code == 200:
-      print(response.status_code)
+      self._log(response.status_code)
       response_json = response.json()
-      pprint(response_json)
+      self._log(response_json, usePP=True)
       status_file = open(f'{self.cache_folder}/{cache_file}', 'w')
       status_file.write(json.dumps(response_json))
       status_file.close()
