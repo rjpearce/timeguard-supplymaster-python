@@ -43,11 +43,7 @@ from timeguard_supplymaster import Client
 
 client = Client()
 client.refresh_devices()
-for device in tg.devices:
-  print(device.name, device.id)
-  for program in device.programs:
-    print(program.id, program.name)
-    print(program.time_slots)
+
 ```
 
 For more examples see the examples folder.

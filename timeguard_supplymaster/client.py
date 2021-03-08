@@ -23,11 +23,21 @@ class Client:
   EVERYDAY = { 'Mon': True, 'Tue': True, 'Wed': True, 'Thu': True, 'Fri': True, 'Sat': True, 'Sun': True}
   NEVER = { 'Mon': False, 'Tue': False, 'Wed': False, 'Thu': False, 'Fri': False, 'Sat': False, 'Sun': False}
 
-  def __init__(self, config_path=f'{str(Path.home())}/.timeguard.yaml', cache_folder=f'{os.getcwd()}/cache', quiet=False):
-    self.config = self.read_config(config_path)
-    self.validate_config()
-    self.cache_folder = cache_folder
-    os.makedirs(cache_folder, exist_ok=True)
+  def __init__(self, config_path=f'{str(Path.home())}/.timeguard.yaml',use_config_file=True, cache_folder=f'{os.getcwd()}/cache', quiet=False, 
+                api_username='', api_password=''):
+
+    if not(use_config_file):
+      self.config['username'] = api_username
+      self.config['password'] = api_password
+      self.config['use_cache'] = False
+
+    else:
+
+      self.config = self.read_config(config_path)
+      self.validate_config()
+      self.cache_folder = cache_folder
+      os.makedirs(cache_folder, exist_ok=True)
+    
     self.quiet = quiet
 
   def _log(self, *msg, usePP = False):
@@ -81,5 +91,7 @@ class Client:
     self.token = response_json['message']['user']['token']
     self.user_id = response_json['message']['user']['id']
     for device in response_json['message']['wifi_box']:
-      self.devices.append(Device(self, device))
+      if device['online'] == '1':
+        self.devices.append(Device(self, device))
+      else: self._log(device['name'], 'is offline')
     return self.devices
