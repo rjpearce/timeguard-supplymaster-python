@@ -2,6 +2,8 @@
 
 This Python module will provides an open-source implementation of the client API used by the Timeguard's Supplymaster application. This is typically used to control [Timeguard's FSTWIFI Wi-Fi Controlled Fused Spur](https://www.timeguard.com/products/time/immersion-and-general-purpose-timeswitches/wi-fi-controlled-fused-spur)
 
+If you want to be able to control the device locally without Internet access take a look at the amazing work by Andrey Yantsen in this project: [timeguard-mqtt](https://github.com/andrey-yantsen/timeguard-mqtt)
+
 This implementation is based on my [investigation of the API](https://github.com/rjpearce/timeguard-supplymaster)
 
 It is currently in the early stages of development, contributions are always welcome but it will be a fast moving target
@@ -39,7 +41,9 @@ The software is provided “as is”, without warranty of any kind, express or i
 List all devices, programs and time slots.
 
 ```python
-from timeguard_supplymaster import Client
+from timeguard_supplymaster import Clien
+<!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
+t
 
 client = Client()
 client.refresh_devices()
