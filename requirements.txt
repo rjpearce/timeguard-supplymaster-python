@@ -4,4 +4,4 @@ idna==3.7
 PyYAML==5.4.1
 requests==2.32.4
 simplejson==3.17.0
-urllib3==1.26.19
+urllib3==2.5.0
